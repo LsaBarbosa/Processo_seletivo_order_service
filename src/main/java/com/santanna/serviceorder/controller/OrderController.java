@@ -5,11 +5,11 @@ import com.santanna.serviceorder.dto.OrderRequestDto;
 import com.santanna.serviceorder.dto.OrderResponseDto;
 import com.santanna.serviceorder.service.OrderService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/order")
@@ -35,7 +35,22 @@ public class OrderController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity<Page<OrderResponseDto>> getAllOrders(Pageable pageable) {
+        Page<OrderResponseDto> orders = orderService.getAllOrders(pageable);
+        return ResponseEntity.ok(orders);
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long id) {
+        var order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
