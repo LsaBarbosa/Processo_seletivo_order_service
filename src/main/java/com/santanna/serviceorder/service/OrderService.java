@@ -11,12 +11,12 @@ import com.santanna.serviceorder.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -69,9 +69,26 @@ public class OrderService {
         }
     }
 
-    public List<OrderResponseDto> getAllOrders() {
-        return orderRepository.findAll().stream().map(this::toResponseDto).collect(Collectors.toList());
+    public Page<OrderResponseDto> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::toResponseDto);
     }
+
+
+    public OrderResponseDto getOrderById(Long id) {
+        var order = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found with ID: " + id));
+        return toResponseDto(order);
+    }
+
+    @Transactional
+    public void deleteOrder(Long id) {
+        var order = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found with ID: " + id));
+
+        orderRepository.delete(order);
+    }
+
 
     private OrderResponseDto toResponseDto(Order order) {
         return OrderResponseDto.builder()

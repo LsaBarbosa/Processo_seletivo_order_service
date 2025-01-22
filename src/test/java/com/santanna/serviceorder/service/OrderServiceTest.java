@@ -6,6 +6,7 @@ import com.santanna.serviceorder.dto.OrderRequestDto;
 import com.santanna.serviceorder.dto.OrderResponseDto;
 import com.santanna.serviceorder.handler.model.BadRequestException;
 import com.santanna.serviceorder.handler.model.InternalServerErrorException;
+import com.santanna.serviceorder.handler.model.NotFoundException;
 import com.santanna.serviceorder.repository.OrderRepository;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -132,13 +136,54 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("Should Get All Orders Successfully")
-    void shouldGetAllOrdersSuccessfully() {
-        when(orderRepository.findAll()).thenReturn(List.of(new Order(), new Order()));
+    @DisplayName("Should Get All Orders With Pagination Successfully")
+    void shouldGetAllOrdersWithPaginationSuccessfully() {
+        var pageable = Pageable.ofSize(10);
+        when(orderRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(new Order(), new Order())));
 
-        List<OrderResponseDto> response = orderService.getAllOrders();
+        Page<OrderResponseDto> response = orderService.getAllOrders(pageable);
         assertNotNull(response);
-        assertEquals(2, response.size());
-        verify(orderRepository, times(1)).findAll();
+        assertEquals(2, response.getTotalElements());
+        verify(orderRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("Should Get Order By ID Successfully")
+    void shouldGetOrderByIdSuccessfully() {
+        Order order = new Order();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        OrderResponseDto response = orderService.getOrderById(1L);
+        assertNotNull(response);
+        verify(orderRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Should Throw NotFoundException When Order ID Not Found")
+    void shouldThrowNotFoundExceptionWhenOrderIdNotFound() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+
+        var exception = assertThrows(NotFoundException.class, () -> orderService.getOrderById(1L));
+        assertEquals("Order not found with ID: 1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should Delete Order Successfully")
+    void shouldDeleteOrderSuccessfully() {
+        Order order = new Order();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        doNothing().when(orderRepository).delete(order);
+
+        orderService.deleteOrder(1L);
+        verify(orderRepository, times(1)).delete(order);
+    }
+
+    @Test
+    @DisplayName("Should Throw NotFoundException When Deleting Order That Does Not Exist")
+    void shouldThrowNotFoundExceptionWhenDeletingOrderThatDoesNotExist() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+
+        var exception = assertThrows(NotFoundException.class, () -> orderService.deleteOrder(1L));
+        assertEquals("Order not found with ID: 1", exception.getMessage());
     }
 }
