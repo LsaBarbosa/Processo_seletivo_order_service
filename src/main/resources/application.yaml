@@ -26,10 +26,23 @@ spring:
         max-concurrency: 10
         prefetch: 5
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+
 springdoc:
   api-docs:
     enabled: true
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+
 

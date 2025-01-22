@@ -15,10 +15,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.testcontainers.containers.GenericContainer;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,7 +33,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
+@EnableCaching
+@AutoConfigureCache
 class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
@@ -38,9 +45,23 @@ class OrderServiceTest {
     private Order order;
     private OrderRequestDto orderRequestDto;
 
+    @Mock
+    private CacheManager cacheManager;
+
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
+
+    static final GenericContainer<?> redisContainer =
+            new GenericContainer<>("redis:7.0.5").withExposedPorts(6379);
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        redisContainer.start();
+        System.setProperty("spring.redis.host", redisContainer.getHost());
+        System.setProperty("spring.redis.port", redisContainer.getFirstMappedPort().toString());
 
         orderRequestDto = OrderRequestDto.builder()
                 .orderNumber("ORD12345")
@@ -185,5 +206,31 @@ class OrderServiceTest {
 
         var exception = assertThrows(NotFoundException.class, () -> orderService.deleteOrder(1L));
         assertEquals("Order not found with ID: 1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should Get Order By ID and Cache the Result")
+    void shouldGetOrderByIdAndCacheResult() {
+        Long orderId = 1L;
+        OrderResponseDto mockOrder = new OrderResponseDto();
+        mockOrder.setId(orderId);
+        mockOrder.setProductName("Produto Teste");
+        mockOrder.setTotalValue(new BigDecimal("300.00"));
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        var valueOperations = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("orders::" + orderId)).thenReturn(null);
+
+        OrderResponseDto result1 = orderService.getOrderById(orderId);
+        assertNotNull(result1);
+        assertEquals(orderId, result1.getId());
+        verify(orderRepository, times(1)).findById(orderId);
+
+        when(valueOperations.get("orders::" + orderId)).thenReturn(mockOrder);
+        OrderResponseDto result2 = orderService.getOrderById(orderId);
+        assertNotNull(result2);
+        assertEquals("Produto Teste", result2.getProductName());
+        verify(orderRepository, times(2)).findById(orderId);
     }
 }
