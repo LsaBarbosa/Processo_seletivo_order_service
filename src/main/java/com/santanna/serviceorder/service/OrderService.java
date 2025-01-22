@@ -10,6 +10,8 @@ import com.santanna.serviceorder.handler.model.NotFoundException;
 import com.santanna.serviceorder.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,6 +56,7 @@ public class OrderService {
     }
 
     @Transactional
+    @CacheEvict(value = "orders", key = "#id",  allEntries =true)
     public OrderResponseDto updateOrderStatus(Long id, OrderStatus orderStatus) {
         try {
             var order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found"));
@@ -74,7 +77,7 @@ public class OrderService {
                 .map(this::toResponseDto);
     }
 
-
+    @Cacheable(value = "orders", key = "#id")
     public OrderResponseDto getOrderById(Long id) {
         var order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found with ID: " + id));
