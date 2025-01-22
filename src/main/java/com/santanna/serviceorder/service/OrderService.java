@@ -4,8 +4,13 @@ import com.santanna.serviceorder.domain.Order;
 import com.santanna.serviceorder.domain.OrderStatus;
 import com.santanna.serviceorder.dto.OrderRequestDto;
 import com.santanna.serviceorder.dto.OrderResponseDto;
+import com.santanna.serviceorder.handler.model.BadRequestException;
+import com.santanna.serviceorder.handler.model.InternalServerErrorException;
+import com.santanna.serviceorder.handler.model.NotFoundException;
 import com.santanna.serviceorder.repository.OrderRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,29 +29,45 @@ public class OrderService {
 
     @Transactional
     public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) {
-        if (orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber()).isPresent()) {
-            throw new IllegalArgumentException("Order already exists");
+        boolean numberIsPresent = orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber()).isPresent();
+        if (numberIsPresent) throw new BadRequestException("Order already exists");
+        try {
+            var order = Order.builder()
+                    .orderNumber(orderRequestDto.getOrderNumber())
+                    .productName(orderRequestDto.getProductName())
+                    .quantity(orderRequestDto.getQuantity())
+                    .totalValue(orderRequestDto.getUnitPrice()
+                            .multiply(BigDecimal.valueOf(orderRequestDto.getQuantity())))
+                    .orderStatus(OrderStatus.RECEIVED).createdAt(LocalDateTime.now()).build();
+            var savedOrder = orderRepository.save(order);
+            return toResponseDto(savedOrder);
+
+        } catch (ConstraintViolationException ex) {
+            throw new BadRequestException("Validation failed: " + ex.getMessage());
+
+        } catch (DataIntegrityViolationException ex) {
+            throw new BadRequestException("Database integrity violation: " + ex.getMessage());
+
+        } catch (Exception ex) {
+            throw new InternalServerErrorException("Unexpected error occurred while creating order.");
         }
-        var order = Order.builder()
-                .orderNumber(orderRequestDto.getOrderNumber())
-                .productName(orderRequestDto.getProductName())
-                .quantity(orderRequestDto.getQuantity())
-                .totalValue(orderRequestDto.getUnitPrice()
-                        .multiply(BigDecimal.valueOf(orderRequestDto.getQuantity())))
-                .orderStatus(OrderStatus.RECEIVED).createdAt(LocalDateTime.now()).build();
-        var savedOrder = orderRepository.save(order);
-        return toResponseDto(savedOrder);
     }
 
     @Transactional
     public OrderResponseDto updateOrderStatus(Long id, OrderStatus orderStatus) {
-        var order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setOrderStatus(orderStatus);
+        try {
+            var order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found"));
+            order.setOrderStatus(orderStatus);
 
-        var updatedOrder = orderRepository.save(order);
-        return toResponseDto(updatedOrder);
+            var updatedOrder = orderRepository.save(order);
+            return toResponseDto(updatedOrder);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BadRequestException("Invalid data for updating order status: " + ex.getMessage());
+
+        } catch (Exception ex) {
+            throw new InternalServerErrorException("Unexpected error while updating order status.");
+        }
     }
-
 
     public List<OrderResponseDto> getAllOrders() {
         return orderRepository.findAll().stream().map(this::toResponseDto).collect(Collectors.toList());

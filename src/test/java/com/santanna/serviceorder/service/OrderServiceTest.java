@@ -3,15 +3,21 @@ package com.santanna.serviceorder.service;
 import com.santanna.serviceorder.domain.Order;
 import com.santanna.serviceorder.domain.OrderStatus;
 import com.santanna.serviceorder.dto.OrderRequestDto;
+import com.santanna.serviceorder.dto.OrderResponseDto;
+import com.santanna.serviceorder.handler.model.BadRequestException;
+import com.santanna.serviceorder.handler.model.InternalServerErrorException;
 import com.santanna.serviceorder.repository.OrderRepository;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,14 +70,42 @@ class OrderServiceTest {
         verify(orderRepository, times(1)).save(any(Order.class));
     }
     @Test
-    @DisplayName("Should Not Create Order Already Exists")
-    void shouldNotCreateOrder_AlreadyExists() {
-        when(orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber())).thenReturn(Optional.of(order));
+    @DisplayName("Should Throw BadRequestException when order already exists")
+    void shouldThrowBadRequestException_WhenOrderAlreadyExists() {
+        when(orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber())).thenReturn(Optional.of(new Order()));
 
-        var exception = assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(orderRequestDto));
-
+        var exception = assertThrows(BadRequestException.class, () -> orderService.createOrder(orderRequestDto));
         assertEquals("Order already exists", exception.getMessage());
-        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should Throw BadRequestException when validation fails")
+    void shouldThrowBadRequestException_WhenValidationFails() {
+        when(orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber())).thenReturn(Optional.empty());
+        when(orderRepository.save(any(Order.class))).thenThrow(new ConstraintViolationException("Validation Error", null));
+
+        var exception = assertThrows(BadRequestException.class, () -> orderService.createOrder(orderRequestDto));
+        assertTrue(exception.getMessage().contains("Validation failed"));
+    }
+
+    @Test
+    @DisplayName("Should Throw BadRequestException on data integrity violation")
+    void shouldThrowBadRequestException_OnDataIntegrityViolation() {
+        when(orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber())).thenReturn(Optional.empty());
+        when(orderRepository.save(any(Order.class))).thenThrow(new DataIntegrityViolationException("Constraint Error"));
+
+        var exception = assertThrows(BadRequestException.class, () -> orderService.createOrder(orderRequestDto));
+        assertTrue(exception.getMessage().contains("Database integrity violation"));
+    }
+
+    @Test
+    @DisplayName("Should Throw InternalServerErrorException on unexpected error")
+    void shouldThrowInternalServerErrorException_OnUnexpectedError() {
+        when(orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber())).thenReturn(Optional.empty());
+        when(orderRepository.save(any(Order.class))).thenThrow(new RuntimeException("Unexpected error"));
+
+        var exception = assertThrows(InternalServerErrorException.class, () -> orderService.createOrder(orderRequestDto));
+        assertEquals("Unexpected error occurred while creating order.", exception.getMessage());
     }
 
     @Test
@@ -88,13 +122,23 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("Should Not Update Order Status Not Found")
-    void shouldUpdateNotOrderStatus_NotFound() {
-        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+    @DisplayName("Should Throw InternalServerErrorException when unexpected error updating order")
+    void shouldThrowInternalServerErrorException_WhenUnexpectedErrorUpdatingOrder() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(new Order()));
+        when(orderRepository.save(any(Order.class))).thenThrow(new RuntimeException("Unexpected save error"));
 
-        var exception = assertThrows(RuntimeException.class,
-                () -> orderService.updateOrderStatus(1L, OrderStatus.PROCESSED));
+        var exception = assertThrows(InternalServerErrorException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.PROCESSED));
+        assertEquals("Unexpected error while updating order status.", exception.getMessage());
+    }
 
-        assertEquals("Order not found", exception.getMessage());
+    @Test
+    @DisplayName("Should Get All Orders Successfully")
+    void shouldGetAllOrdersSuccessfully() {
+        when(orderRepository.findAll()).thenReturn(List.of(new Order(), new Order()));
+
+        List<OrderResponseDto> response = orderService.getAllOrders();
+        assertNotNull(response);
+        assertEquals(2, response.size());
+        verify(orderRepository, times(1)).findAll();
     }
 }
