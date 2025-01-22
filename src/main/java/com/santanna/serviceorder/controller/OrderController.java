@@ -1,7 +1,6 @@
 package com.santanna.serviceorder.controller;
 
 import com.santanna.serviceorder.domain.OrderStatus;
-import com.santanna.serviceorder.dto.OrderRequestDto;
 import com.santanna.serviceorder.dto.OrderResponseDto;
 import com.santanna.serviceorder.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,16 +22,6 @@ public class OrderController {
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
-    }
-
-    @Operation(summary = "Criar um novo pedido", description = "Cria um pedido com os dados fornecidos")
-    @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto orderRequestDto) {
-        var createOrder = orderService.createOrder(orderRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createOrder);
     }
 
     @Operation(summary = "Atualizar status do pedido", description = "Atualiza o status de um pedido existente")

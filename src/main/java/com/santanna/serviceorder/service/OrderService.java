@@ -28,7 +28,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponseDto createOrder(OrderRequestDto orderRequestDto) {
+    public OrderResponseDto createOrder( OrderRequestDto orderRequestDto) {
         boolean numberIsPresent = orderRepository.findByOrderNumber(orderRequestDto.getOrderNumber()).isPresent();
         if (numberIsPresent) throw new BadRequestException("Order already exists");
         try {
@@ -38,7 +38,7 @@ public class OrderService {
                     .quantity(orderRequestDto.getQuantity())
                     .totalValue(orderRequestDto.getUnitPrice()
                             .multiply(BigDecimal.valueOf(orderRequestDto.getQuantity())))
-                    .orderStatus(OrderStatus.RECEIVED).createdAt(LocalDateTime.now()).build();
+                    .orderStatus(OrderStatus.PROCESSED).createdAt(LocalDateTime.now()).build();
             var savedOrder = orderRepository.save(order);
             return toResponseDto(savedOrder);
 

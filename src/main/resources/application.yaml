@@ -15,6 +15,17 @@ spring:
   server:
     port: 8080
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        concurrency: 3
+        max-concurrency: 10
+        prefetch: 5
+
 springdoc:
   api-docs:
     enabled: true
