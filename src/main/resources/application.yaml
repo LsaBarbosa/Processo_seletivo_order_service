@@ -14,3 +14,11 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
   server:
     port: 8080
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
