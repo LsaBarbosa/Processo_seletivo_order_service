@@ -1,8 +1,9 @@
-package com.santanna.serviceorder.service;
+package com.santanna.serviceorder.infrastructure.messaging;
 
-import com.santanna.serviceorder.config.RabbitMqConfig;
-import com.santanna.serviceorder.dto.OrderRequestDto;
-import com.santanna.serviceorder.handler.model.BadRequestException;
+import com.santanna.serviceorder.infrastructure.config.RabbitMqConfig;
+import com.santanna.serviceorder.domain.dto.OrderRequestDto;
+import com.santanna.serviceorder.app.handler.model.BadRequestException;
+import com.santanna.serviceorder.domain.service.OrderService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;

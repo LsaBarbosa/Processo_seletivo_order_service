@@ -3,9 +3,9 @@ spring:
     name: service-order
 
   datasource:
-    url: jdbc:mysql://localhost:3306/order_db?createDatabaseIfNotExist=true
-    username: root
-    password: root
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 50
@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
@@ -30,10 +30,11 @@ spring:
     port: 8080
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+
     listener:
       simple:
         concurrency: 5
@@ -42,8 +43,8 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT}
       timeout: 60000
       lettuce:
         pool:
@@ -56,7 +57,11 @@ springdoc:
     enabled: true
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: ${SPRING_DOC_SWAGGER_UI_PATH}
+    config-url: /v3/api-docs/swagger-config
+    url: ${SPRING_DOC_API_DOCS_PATH}
+    display-request-duration: true
+    disable-swagger-default-url: true
 
 management:
   endpoints:

@@ -1,4 +1,4 @@
-package com.santanna.serviceorder.handler.model;
+package com.santanna.serviceorder.app.handler.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

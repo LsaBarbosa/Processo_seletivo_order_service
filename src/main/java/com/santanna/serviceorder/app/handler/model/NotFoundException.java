@@ -1,4 +1,4 @@
-package com.santanna.serviceorder.handler.model;
+package com.santanna.serviceorder.app.handler.model;
 
 public class NotFoundException extends RuntimeException {
 

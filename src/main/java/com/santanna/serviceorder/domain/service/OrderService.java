@@ -1,13 +1,13 @@
-package com.santanna.serviceorder.service;
+package com.santanna.serviceorder.domain.service;
 
-import com.santanna.serviceorder.domain.Order;
+import com.santanna.serviceorder.domain.model.Order;
 import com.santanna.serviceorder.domain.OrderStatus;
-import com.santanna.serviceorder.dto.OrderRequestDto;
-import com.santanna.serviceorder.dto.OrderResponseDto;
-import com.santanna.serviceorder.handler.model.BadRequestException;
-import com.santanna.serviceorder.handler.model.InternalServerErrorException;
-import com.santanna.serviceorder.handler.model.NotFoundException;
-import com.santanna.serviceorder.repository.OrderRepository;
+import com.santanna.serviceorder.domain.dto.OrderRequestDto;
+import com.santanna.serviceorder.domain.dto.OrderResponseDto;
+import com.santanna.serviceorder.app.handler.model.BadRequestException;
+import com.santanna.serviceorder.app.handler.model.InternalServerErrorException;
+import com.santanna.serviceorder.app.handler.model.NotFoundException;
+import com.santanna.serviceorder.infrastructure.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.cache.annotation.CacheEvict;

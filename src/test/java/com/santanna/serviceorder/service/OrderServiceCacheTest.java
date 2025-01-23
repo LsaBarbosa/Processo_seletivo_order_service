@@ -1,9 +1,10 @@
 package com.santanna.serviceorder.service;
 
-import com.santanna.serviceorder.domain.Order;
-import com.santanna.serviceorder.dto.OrderResponseDto;
-import com.santanna.serviceorder.handler.model.NotFoundException;
-import com.santanna.serviceorder.repository.OrderRepository;
+import com.santanna.serviceorder.domain.model.Order;
+import com.santanna.serviceorder.domain.dto.OrderResponseDto;
+import com.santanna.serviceorder.app.handler.model.NotFoundException;
+import com.santanna.serviceorder.domain.service.OrderService;
+import com.santanna.serviceorder.infrastructure.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
