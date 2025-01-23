@@ -1,9 +1,9 @@
-package com.santanna.serviceorder.handler;
+package com.santanna.serviceorder.app.handler;
 
-import com.santanna.serviceorder.handler.model.BadRequestException;
-import com.santanna.serviceorder.handler.model.InternalServerErrorException;
-import com.santanna.serviceorder.handler.model.NotFoundException;
-import com.santanna.serviceorder.handler.model.StandardError;
+import com.santanna.serviceorder.app.handler.model.BadRequestException;
+import com.santanna.serviceorder.app.handler.model.NotFoundException;
+import com.santanna.serviceorder.app.handler.model.StandardError;
+import com.santanna.serviceorder.app.handler.model.InternalServerErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;

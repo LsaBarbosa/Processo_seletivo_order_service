@@ -1,4 +1,4 @@
-package com.santanna.serviceorder.config;
+package com.santanna.serviceorder.infrastructure.config;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;

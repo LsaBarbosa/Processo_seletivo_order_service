@@ -1,6 +1,6 @@
-package com.santanna.serviceorder.repository;
+package com.santanna.serviceorder.infrastructure.repository;
 
-import com.santanna.serviceorder.domain.Order;
+import com.santanna.serviceorder.domain.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

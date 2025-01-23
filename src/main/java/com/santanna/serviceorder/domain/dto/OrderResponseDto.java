@@ -1,4 +1,4 @@
-package com.santanna.serviceorder.dto;
+package com.santanna.serviceorder.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.santanna.serviceorder.domain.OrderStatus;

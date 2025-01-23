@@ -1,6 +1,8 @@
 package com.santanna.serviceorder.service;
 
-import com.santanna.serviceorder.dto.OrderRequestDto;
+import com.santanna.serviceorder.domain.dto.OrderRequestDto;
+import com.santanna.serviceorder.domain.service.OrderService;
+import com.santanna.serviceorder.infrastructure.messaging.OrderMessageConsumer;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

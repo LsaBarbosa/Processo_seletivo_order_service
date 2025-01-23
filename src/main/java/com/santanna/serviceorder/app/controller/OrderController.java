@@ -1,8 +1,8 @@
-package com.santanna.serviceorder.controller;
+package com.santanna.serviceorder.app.controller;
 
 import com.santanna.serviceorder.domain.OrderStatus;
-import com.santanna.serviceorder.dto.OrderResponseDto;
-import com.santanna.serviceorder.service.OrderService;
+import com.santanna.serviceorder.domain.dto.OrderResponseDto;
+import com.santanna.serviceorder.domain.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
