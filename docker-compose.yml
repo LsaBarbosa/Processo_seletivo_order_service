@@ -47,7 +47,8 @@ services:
       replicas: 2
       restart_policy:
         condition: on-failure
-    ports: []
+    ports:
+        - "8085-8087:8080"
     depends_on:
       - mysql
       - redis
