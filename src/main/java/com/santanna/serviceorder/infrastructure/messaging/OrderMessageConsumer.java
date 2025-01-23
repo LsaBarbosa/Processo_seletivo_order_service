@@ -4,6 +4,7 @@ import com.santanna.serviceorder.infrastructure.config.RabbitMqConfig;
 import com.santanna.serviceorder.domain.dto.OrderRequestDto;
 import com.santanna.serviceorder.app.handler.model.BadRequestException;
 import com.santanna.serviceorder.domain.service.OrderService;
+import com.santanna.serviceorder.utils.LoggerUtils;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -16,16 +17,19 @@ import java.util.Set;
 public class OrderMessageConsumer {
     private final OrderService orderService;
     private final Validator validator;
+    private final LoggerUtils loggerUtils;
 
-    public OrderMessageConsumer(OrderService orderService, Validator validator) {
+    public OrderMessageConsumer(OrderService orderService, Validator validator, LoggerUtils loggerUtils) {
         this.orderService = orderService;
         this.validator = validator;
+        this.loggerUtils = loggerUtils;
     }
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_QUEUE, concurrency = "3-10")
     public void receiveOrder(OrderRequestDto orderRequestDto) {
         try {
-            System.out.println("Recebendo pedido da fila: " + orderRequestDto.getOrderNumber());
+            loggerUtils.logInfo(OrderMessageConsumer.class, "Received new order message from queue. Order number: {}", orderRequestDto.getOrderNumber());
+
             Set<ConstraintViolation<OrderRequestDto>> violations = validator.validate(orderRequestDto);
 
             if (!violations.isEmpty()) {
@@ -33,12 +37,15 @@ public class OrderMessageConsumer {
                 for (ConstraintViolation<OrderRequestDto> violation : violations) {
                     sb.append(violation.getPropertyPath()).append(" ").append(violation.getMessage()).append("; ");
                 }
+                loggerUtils.logWarn(OrderMessageConsumer.class, "Validation failed for order number {}: {}", orderRequestDto.getOrderNumber(), sb.toString());
+
                 throw new BadRequestException(sb.toString());
             }
             orderService.createOrder(orderRequestDto);
-            System.out.println("Pedido processado com sucesso: " + orderRequestDto.getOrderNumber());
+            loggerUtils.logInfo(OrderMessageConsumer.class, "Order successfully processed. Order number: {}", orderRequestDto.getOrderNumber());
+
         } catch (Exception e) {
-            System.err.println("Erro ao processar pedido: " + e.getMessage());
+            loggerUtils.logWarn(OrderMessageConsumer.class, "Bad request error while processing order number {}: {}", orderRequestDto.getOrderNumber(), e.getMessage());
             throw new AmqpRejectAndDontRequeueException("Erro crítico: " + e.getMessage());
         }
     }
