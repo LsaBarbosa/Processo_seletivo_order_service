@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "orders")
+@Table(name = "orders",indexes = {
+        @Index(name = "idx_order_number", columnList = "orderNumber"),
+        @Index(name = "idx_order_status", columnList = "orderStatus")
+})
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
