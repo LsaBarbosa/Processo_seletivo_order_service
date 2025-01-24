@@ -34,7 +34,7 @@ O sistema segue uma arquitetura de microsserviços e inclui os seguintes compone
 Certifique-se de ter instalado:
 - Docker e Docker Compose
 - Java 21
-- Maven ou Gradle
+- Gradle
 
 ## Início Rápido
 ### Clonar o Repositório
@@ -50,6 +50,7 @@ docker-compose up -d --build
 ```
 
 ### Acessando a Aplicação
+- **Console RabbitMQ:** [http://localhost:15672](http://localhost:15672)
 - **Swagger UI:** [http://localhost/swagger-ui.html](http://localhost/swagger-ui.html)
 - **Verificação de Saúde (Actuator):** [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 - **Obs:** Use "/v3/api-docs" no campo explore
