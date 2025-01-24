@@ -4,7 +4,7 @@
 O projeto **Service Order** é um serviço backend responsável por gerenciar e processar pedidos de clientes. O sistema recebe pedidos de um sistema externo (Produto A), calcula o valor total e fornece os pedidos processados a outro sistema externo (Produto B). A solução garante escalabilidade, alta disponibilidade e desempenho para processar grandes volumes de pedidos.
 
 ## Arquitetura
-![Desenho](resources/static/Desenho-solucao.png)
+![Desenho](src/main/resources/static/Desenho-solucao.png)
 
 O sistema segue uma arquitetura de microsserviços e inclui os seguintes componentes:
 
